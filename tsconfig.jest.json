@@ -1,0 +1,15 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "sourceMap": true,
+        "strict": true,
+        "module": "commonjs",
+        "target": "es2019",
+        "jsx": "react-jsx",
+        "esModuleInterop": true,
+        "types": [
+            "jest",
+            "node"
+        ]
+    }
+}

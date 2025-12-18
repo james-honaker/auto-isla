@@ -1,0 +1,366 @@
+[
+  {
+    "id": "4",
+    "name": "Acura"
+  },
+  {
+    "id": "5",
+    "name": "Alfa Romeo"
+  },
+  {
+    "id": "72",
+    "name": "American Coach"
+  },
+  {
+    "id": "62",
+    "name": "Aston Martin"
+  },
+  {
+    "id": "6",
+    "name": "Audi"
+  },
+  {
+    "id": "88",
+    "name": "Autos Antiguos"
+  },
+  {
+    "id": "55",
+    "name": "Aviones Helicopteros"
+  },
+  {
+    "id": "60",
+    "name": "Bentley"
+  },
+  {
+    "id": "82",
+    "name": "Blue Bird"
+  },
+  {
+    "id": "7",
+    "name": "BMW"
+  },
+  {
+    "id": "93",
+    "name": "Bugatti"
+  },
+  {
+    "id": "8",
+    "name": "Buick"
+  },
+  {
+    "id": "9",
+    "name": "Cadillac"
+  },
+  {
+    "id": "69",
+    "name": "Carritos de Golf"
+  },
+  {
+    "id": "10",
+    "name": "Chevrolet"
+  },
+  {
+    "id": "11",
+    "name": "Chrysler"
+  },
+  {
+    "id": "71",
+    "name": "Coachmen"
+  },
+  {
+    "id": "12",
+    "name": "Daewoo"
+  },
+  {
+    "id": "13",
+    "name": "Daihatsu"
+  },
+  {
+    "id": "65",
+    "name": "Datsun"
+  },
+  {
+    "id": "14",
+    "name": "Dodge"
+  },
+  {
+    "id": "15",
+    "name": "Equipo Construccion"
+  },
+  {
+    "id": "16",
+    "name": "Ferrari"
+  },
+  {
+    "id": "17",
+    "name": "Fiat"
+  },
+  {
+    "id": "77",
+    "name": "Fleetwood"
+  },
+  {
+    "id": "18",
+    "name": "Ford"
+  },
+  {
+    "id": "57",
+    "name": "FreightLiner"
+  },
+  {
+    "id": "90",
+    "name": "Genesis"
+  },
+  {
+    "id": "19",
+    "name": "Geo"
+  },
+  {
+    "id": "20",
+    "name": "GMC"
+  },
+  {
+    "id": "70",
+    "name": "Great Dane"
+  },
+  {
+    "id": "92",
+    "name": "Hillman"
+  },
+  {
+    "id": "64",
+    "name": "Hino"
+  },
+  {
+    "id": "21",
+    "name": "Honda"
+  },
+  {
+    "id": "53",
+    "name": "Hummer"
+  },
+  {
+    "id": "22",
+    "name": "Hyundai"
+  },
+  {
+    "id": "98",
+    "name": "Ineos"
+  },
+  {
+    "id": "23",
+    "name": "Infiniti"
+  },
+  {
+    "id": "66",
+    "name": "International"
+  },
+  {
+    "id": "24",
+    "name": "Isuzu"
+  },
+  {
+    "id": "25",
+    "name": "Jaguar"
+  },
+  {
+    "id": "26",
+    "name": "Jeep"
+  },
+  {
+    "id": "68",
+    "name": "Kenworth"
+  },
+  {
+    "id": "27",
+    "name": "Kia"
+  },
+  {
+    "id": "28",
+    "name": "Lamborghini"
+  },
+  {
+    "id": "29",
+    "name": "LandRover"
+  },
+  {
+    "id": "30",
+    "name": "Lexus"
+  },
+  {
+    "id": "31",
+    "name": "Lincoln"
+  },
+  {
+    "id": "56",
+    "name": "Lotus"
+  },
+  {
+    "id": "94",
+    "name": "Lucid"
+  },
+  {
+    "id": "67",
+    "name": "Mack"
+  },
+  {
+    "id": "79",
+    "name": "Maserati"
+  },
+  {
+    "id": "32",
+    "name": "Mazda"
+  },
+  {
+    "id": "91",
+    "name": "McLaren"
+  },
+  {
+    "id": "33",
+    "name": "Mercedes Benz"
+  },
+  {
+    "id": "34",
+    "name": "Mercury"
+  },
+  {
+    "id": "81",
+    "name": "MG"
+  },
+  {
+    "id": "54",
+    "name": "MINI"
+  },
+  {
+    "id": "35",
+    "name": "Mitsubishi"
+  },
+  {
+    "id": "97",
+    "name": "Moke"
+  },
+  {
+    "id": "36",
+    "name": "Nissan"
+  },
+  {
+    "id": "37",
+    "name": "Oldsmobile"
+  },
+  {
+    "id": "38",
+    "name": "Otros"
+  },
+  {
+    "id": "86",
+    "name": "Peterbilt"
+  },
+  {
+    "id": "39",
+    "name": "Peugeot"
+  },
+  {
+    "id": "40",
+    "name": "Plymouth"
+  },
+  {
+    "id": "41",
+    "name": "Pontiac"
+  },
+  {
+    "id": "42",
+    "name": "Porsche"
+  },
+  {
+    "id": "89",
+    "name": "RAM"
+  },
+  {
+    "id": "43",
+    "name": "Renault"
+  },
+  {
+    "id": "96",
+    "name": "Rivian"
+  },
+  {
+    "id": "44",
+    "name": "Rolls Royce"
+  },
+  {
+    "id": "45",
+    "name": "Saab"
+  },
+  {
+    "id": "84",
+    "name": "Saturn"
+  },
+  {
+    "id": "52",
+    "name": "Scion"
+  },
+  {
+    "id": "61",
+    "name": "Smart"
+  },
+  {
+    "id": "58",
+    "name": "Sterling"
+  },
+  {
+    "id": "47",
+    "name": "Subaru"
+  },
+  {
+    "id": "48",
+    "name": "Suzuki"
+  },
+  {
+    "id": "87",
+    "name": "Tesla"
+  },
+  {
+    "id": "83",
+    "name": "Thomas"
+  },
+  {
+    "id": "49",
+    "name": "Toyota"
+  },
+  {
+    "id": "75",
+    "name": "Trailers - Otros"
+  },
+  {
+    "id": "80",
+    "name": "Triumph"
+  },
+  {
+    "id": "95",
+    "name": "Vanderhall"
+  },
+  {
+    "id": "99",
+    "name": "VinFast"
+  },
+  {
+    "id": "50",
+    "name": "Volkswagen"
+  },
+  {
+    "id": "51",
+    "name": "Volvo"
+  },
+  {
+    "id": "76",
+    "name": "VPG"
+  },
+  {
+    "id": "85",
+    "name": "Western Star"
+  },
+  {
+    "id": "63",
+    "name": "Yaymy"
+  }
+]
