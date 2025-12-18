@@ -76,3 +76,33 @@ export function getListingsByMake(makeName: string, limit = 50): DBListing[] {
     `);
     return stmt.all(makeName, limit) as DBListing[];
 }
+
+export function getListingsByMakes(makeNames: string[], limitPerMake = 50): DBListing[] {
+    const db = getDB();
+    // Dynamically build placeholders for IN clause
+    const placeholders = makeNames.map(() => '?').join(',');
+    const stmt = db.prepare(`
+        SELECT * FROM listings 
+        WHERE make IN (${placeholders})
+        ORDER BY created_at DESC 
+        LIMIT ?
+    `);
+
+    // We strictly haven't stored 'score' in DB yet, it's calculated on fly. 
+    // So for now, just order by created_at.
+    // Wait, if we want "Best Options" we need to score them *after* fetching or store score.
+    // The current architecture calculates score in search.ts.
+    // So just fetching by recent is fine, sorting happens in search.ts.
+
+    const query = `
+        SELECT * FROM listings 
+        WHERE make IN(${placeholders})
+        ORDER BY created_at DESC
+    LIMIT ?
+        `;
+
+    // A global limit might hide good results from one brand if another dominates.
+    // But for a combined view, a global limit (e.g. 100) is reasonable.
+    const runStmt = db.prepare(query);
+    return runStmt.all(...makeNames, limitPerMake * makeNames.length) as DBListing[];
+}

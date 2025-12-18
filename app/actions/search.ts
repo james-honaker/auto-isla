@@ -2,7 +2,7 @@
 
 import { scrapeListings } from "../lib/scraper";
 import { calculateScore } from "../lib/scoring";
-import { upsertListing, getListingsByMake, DBListing } from "../lib/db";
+import { upsertListing, getListingsByMakes, DBListing } from "../lib/db";
 
 export type ScoredListing = {
     listing: DBListing;
@@ -12,20 +12,16 @@ export type ScoredListing = {
     isFresh: boolean;
 };
 
-export async function findBestDeals(makeId: string, makeName: string): Promise<ScoredListing[]> {
-    console.log(`Searching best deals for ${makeName} (${makeId})...`);
-
-    // 1. Scrape Listings (Real-time)
-    // We scrape first to update the DB with latest data
+// Helper to scrape a single make
+async function updateMarketData(makeId: string, makeName: string) {
     try {
-        const rawListings = await scrapeListings(makeId, 20);
+        const rawListings = await scrapeListings(makeId, 20); // Scrape top 20 fresh ones
 
-        // 2. Upsert into DB
         for (const listing of rawListings) {
             upsertListing({
-                id: listing.linkUrl, // Use URL as unique ID
+                id: listing.linkUrl,
                 make: makeName,
-                model: '', // Scraper doesn't parse model robustly yet
+                model: '',
                 title: listing.title,
                 price: listing.price,
                 year: listing.year,
@@ -36,19 +32,26 @@ export async function findBestDeals(makeId: string, makeName: string): Promise<S
             });
         }
     } catch (e) {
-        console.error("Scraping failed, falling back to DB only", e);
+        console.error(`Scraping failed for ${makeName}`, e);
     }
+}
 
-    // 3. Fetch from DB (Historic + New)
-    // This gives us the persistent view
-    const dbListings = getListingsByMake(makeName, 50);
+export async function searchDeals(makes: { id: string, name: string }[]): Promise<ScoredListing[]> {
+    console.log(`Searching best deals for ${makes.map(m => m.name).join(', ')}...`);
 
-    // 4. Score Listings
+    // 1. Scrape Listings (Parallel)
+    // We limit parallel requests to avoid blasting the server if too many brands
+    // But 9 is likely fine.
+    await Promise.all(makes.map(m => updateMarketData(m.id, m.name)));
+
+    // 2. Fetch from DB (Historic + New)
+    const makeNames = makes.map(m => m.name);
+    const dbListings = getListingsByMakes(makeNames, 20); // Get recent 20 from each (approx)
+
+    // 3. Score Listings
     const scoredListings = dbListings.map(listing => {
-        // Hydrate listing with Make info for reliability lookup
         const { score, reliability, dealScore } = calculateScore(listing);
 
-        // Determine freshness (created < 24h ago)
         const isFresh = listing.created_at
             ? (Date.now() - new Date(listing.created_at).getTime()) < (24 * 60 * 60 * 1000)
             : false;
@@ -62,7 +65,7 @@ export async function findBestDeals(makeId: string, makeName: string): Promise<S
         };
     });
 
-    // 3. Sort by Smart Score (Descending)
+    // 4. Sort by Smart Score (Descending)
     scoredListings.sort((a, b) => b.score - a.score);
 
     return scoredListings;
