@@ -1,21 +1,503 @@
 {
-    "Toyota": 10,
-    "Honda": 10,
-    "Mazda": 10,
-    "Subaru": 9,
-    "Nissan": 8,
-    "Hyundai": 8,
-    "Kia": 8,
-    "Ford": 7,
-    "Mitsubishi": 7,
-    "Jeep": 6,
-    "Chevrolet": 6,
-    "BMW": 5,
-    "Mercedes-Benz": 5,
-    "Audi": 5,
-    "Volkswagen": 5,
-    "Fiat": 4,
-    "Chrysler": 4,
-    "Dodge": 4,
-    "Tesla": 7
+    "Toyota": {
+        "score": 10,
+        "models": {
+            "Corolla": {
+                "score": 10
+            },
+            "Camry": {
+                "score": 10
+            },
+            "Rav4": {
+                "score": 9
+            },
+            "Prius": {
+                "score": 10
+            },
+            "Tacoma": {
+                "score": 10
+            },
+            "Yaris": {
+                "score": 9
+            },
+            "4Runner": {
+                "score": 10
+            },
+            "Highlander": {
+                "score": 9
+            },
+            "Sienna": {
+                "score": 9
+            },
+            "Avalon": {
+                "score": 10
+            },
+            "Tundra": {
+                "score": 9
+            },
+            "Sequoia": {
+                "score": 9
+            },
+            "C-HR": {
+                "score": 8
+            }
+        }
+    },
+    "Honda": {
+        "score": 9,
+        "models": {
+            "Civic": {
+                "score": 10,
+                "bad_years": [
+                    2016
+                ],
+                "warning": "AC/gasket issues in early Gen 10"
+            },
+            "Accord": {
+                "score": 9,
+                "bad_years": [
+                    2008,
+                    2009,
+                    2010
+                ],
+                "warning": "Excessive Oil Consumption/Brakes"
+            },
+            "CR-V": {
+                "score": 9,
+                "bad_years": [
+                    2017,
+                    2018
+                ],
+                "warning": "Check for Oil Dilution (1.5T Engine)"
+            },
+            "Fit": {
+                "score": 10
+            },
+            "Pilot": {
+                "score": 8,
+                "bad_years": [
+                    2016
+                ],
+                "warning": "Transmission/Electrical Issues"
+            },
+            "Odyssey": {
+                "score": 8,
+                "bad_years": [
+                    2014
+                ],
+                "warning": "Transmission Issues"
+            },
+            "HR-V": {
+                "score": 9
+            },
+            "Ridgeline": {
+                "score": 9
+            },
+            "Passport": {
+                "score": 8
+            }
+        }
+    },
+    "Mazda": {
+        "score": 9,
+        "models": {
+            "3": {
+                "score": 9,
+                "bad_years": [
+                    2010,
+                    2011
+                ],
+                "warning": "Clutch/Dashboard Issues (Early Models)"
+            },
+            "6": {
+                "score": 9
+            },
+            "CX-5": {
+                "score": 9,
+                "bad_years": [
+                    2014,
+                    2016
+                ],
+                "warning": "Daytime Running Light/Transmission Glitches"
+            },
+            "MX-5": {
+                "score": 10
+            },
+            "CX-3": {
+                "score": 9
+            },
+            "CX-9": {
+                "score": 8
+            },
+            "CX-30": {
+                "score": 9
+            }
+        }
+    },
+    "Nissan": {
+        "score": 6,
+        "models": {
+            "Altima": {
+                "score": 4,
+                "bad_years": [
+                    2013,
+                    2014,
+                    2015,
+                    2016
+                ],
+                "warning": "High Risk: CVT Transmission Failure"
+            },
+            "Sentra": {
+                "score": 5,
+                "bad_years": [
+                    2013,
+                    2014,
+                    2015,
+                    2016
+                ],
+                "warning": "High Risk: CVT Transmission Failure"
+            },
+            "Versa": {
+                "score": 5,
+                "bad_years": [
+                    2012,
+                    2013,
+                    2014,
+                    2015,
+                    2016,
+                    2017
+                ],
+                "warning": "High Risk: CVT Transmission Failure"
+            },
+            "Rogue": {
+                "score": 5,
+                "bad_years": [
+                    2014,
+                    2015,
+                    2016
+                ],
+                "warning": "High Risk: CVT Transmission Failure"
+            },
+            "Pathfinder": {
+                "score": 5,
+                "bad_years": [
+                    2013,
+                    2014
+                ],
+                "warning": "Transmission Shudder/Failure"
+            },
+            "Frontier": {
+                "score": 9
+            },
+            "Leaf": {
+                "score": 8
+            },
+            "Murano": {
+                "score": 6,
+                "bad_years": [
+                    2009,
+                    2015
+                ],
+                "warning": "Soft Brake Pedal/Transmission"
+            },
+            "Maxima": {
+                "score": 7,
+                "bad_years": [
+                    2009,
+                    2010
+                ],
+                "warning": "Steering Lock Failure"
+            },
+            "Kicks": {
+                "score": 6
+            }
+        }
+    },
+    "Hyundai": {
+        "score": 7,
+        "models": {
+            "Elantra": {
+                "score": 7,
+                "bad_years": [
+                    2011,
+                    2012,
+                    2013,
+                    2015
+                ],
+                "warning": "Engine Knock/Tick Risk (Theta II)"
+            },
+            "Sonata": {
+                "score": 5,
+                "bad_years": [
+                    2011,
+                    2012,
+                    2013,
+                    2014,
+                    2015
+                ],
+                "warning": "Severe: Engine Seizure Risk (Theta II)"
+            },
+            "Tucson": {
+                "score": 7,
+                "bad_years": [
+                    2016,
+                    2017
+                ],
+                "warning": "DCT Transmission Hesitation"
+            },
+            "Santa Fe": {
+                "score": 6,
+                "bad_years": [
+                    2012,
+                    2013,
+                    2014,
+                    2017
+                ],
+                "warning": "Engine Failure Risk"
+            },
+            "Accent": {
+                "score": 8
+            },
+            "Kona": {
+                "score": 8,
+                "bad_years": [
+                    2018
+                ],
+                "warning": "Engine Issues Recalled"
+            },
+            "Veloster": {
+                "score": 7
+            }
+        }
+    },
+    "Kia": {
+        "score": 7,
+        "models": {
+            "Forte": {
+                "score": 7,
+                "bad_years": [
+                    2010,
+                    2017
+                ],
+                "warning": "Engine Knock Causing Failure"
+            },
+            "Optima": {
+                "score": 5,
+                "bad_years": [
+                    2011,
+                    2012,
+                    2013,
+                    2014,
+                    2015
+                ],
+                "warning": "Severe: Engine Seizure Risk (Theta II)"
+            },
+            "Soul": {
+                "score": 7,
+                "bad_years": [
+                    2012,
+                    2013,
+                    2014,
+                    2015,
+                    2016
+                ],
+                "warning": "Catalytic Converter/Engine Fire Risk"
+            },
+            "Rio": {
+                "score": 8
+            },
+            "Sorento": {
+                "score": 6,
+                "bad_years": [
+                    2011,
+                    2012,
+                    2013,
+                    2014,
+                    2016
+                ],
+                "warning": "Engine Failure Risk"
+            },
+            "Sportage": {
+                "score": 7,
+                "bad_years": [
+                    2011,
+                    2012
+                ],
+                "warning": "Engine Failure Risk"
+            },
+            "Telluride": {
+                "score": 9
+            }
+        }
+    },
+    "Ford": {
+        "score": 6,
+        "models": {
+            "F-150": {
+                "score": 9,
+                "bad_years": [
+                    2011,
+                    2012,
+                    2013
+                ],
+                "warning": "EcoBoost Engine Trouble/Transmission"
+            },
+            "Mustang": {
+                "score": 8
+            },
+            "Focus": {
+                "score": 2,
+                "bad_years": [
+                    2012,
+                    2013,
+                    2014,
+                    2015,
+                    2016
+                ],
+                "warning": "AVOID: PowerShift Transmission Nightmare"
+            },
+            "Fiesta": {
+                "score": 2,
+                "bad_years": [
+                    2011,
+                    2012,
+                    2013,
+                    2014,
+                    2015,
+                    2016
+                ],
+                "warning": "AVOID: PowerShift Transmission Nightmare"
+            },
+            "Explorer": {
+                "score": 5,
+                "bad_years": [
+                    2002,
+                    2003,
+                    2004,
+                    2013,
+                    2016
+                ],
+                "warning": "Transmission/Power Steering Failure"
+            },
+            "Fusion": {
+                "score": 7,
+                "bad_years": [
+                    2013,
+                    2014
+                ],
+                "warning": "Transmission/Engine Stalling"
+            },
+            "Escape": {
+                "score": 6,
+                "bad_years": [
+                    2013,
+                    2014,
+                    2017
+                ],
+                "warning": "Transmission/Engine Fires"
+            },
+            "Edge": {
+                "score": 7
+            },
+            "Ranger": {
+                "score": 9
+            }
+        }
+    },
+    "Chevrolet": {
+        "score": 6,
+        "models": {
+            "Silverado": {
+                "score": 8,
+                "bad_years": [
+                    2014,
+                    2015,
+                    2017
+                ],
+                "warning": "Transmission Shudder (8-speed)"
+            },
+            "Corvette": {
+                "score": 9
+            },
+            "Cruze": {
+                "score": 4,
+                "bad_years": [
+                    2011,
+                    2012,
+                    2013,
+                    2014
+                ],
+                "warning": "Coolant Leaks/Turbo Failure/Transmission"
+            },
+            "Malibu": {
+                "score": 7,
+                "bad_years": [
+                    2010,
+                    2013,
+                    2016
+                ],
+                "warning": "Engine Power Reduced/Transmission"
+            },
+            "Equinox": {
+                "score": 5,
+                "bad_years": [
+                    2010,
+                    2011,
+                    2012,
+                    2013,
+                    2015
+                ],
+                "warning": "Excessive Oil Consumption/Timing Chain"
+            },
+            "Trax": {
+                "score": 6
+            },
+            "Camaro": {
+                "score": 8
+            },
+            "Tahoe": {
+                "score": 8,
+                "bad_years": [
+                    2015
+                ],
+                "warning": "AC/Electrical Issues"
+            },
+            "Suburban": {
+                "score": 8,
+                "bad_years": [
+                    2015
+                ],
+                "warning": "AC/Electrical Issues"
+            },
+            "Colorado": {
+                "score": 7,
+                "bad_years": [
+                    2015
+                ],
+                "warning": "Transmission Shifting Issues"
+            }
+        }
+    },
+    "Mitsubishi": {
+        "score": 7,
+        "models": {
+            "Mirage": {
+                "score": 8,
+                "bad_years": [
+                    2014,
+                    2015
+                ],
+                "warning": "Brakes/Handling"
+            },
+            "Outlander": {
+                "score": 8
+            },
+            "Outlander Sport": {
+                "score": 8
+            },
+            "Lancer": {
+                "score": 8
+            }
+        }
+    }
 }

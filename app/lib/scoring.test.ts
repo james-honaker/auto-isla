@@ -1,68 +1,93 @@
+
 import { calculateScore } from './scoring';
-import { DBListing } from './db';
 
-const mockListing: any = {
-    price: 20000,
-    year: 2020,
-    mileage: 50000,
-    make: 'Toyota',
-};
+describe('Scoring Engine 2.0', () => {
 
-describe('Scoring Algorithm', () => {
-    it('should give a high score for a reliable, low price, low mileage car', () => {
+    test('Should identify safe models and score high', () => {
         const car = {
-            ...mockListing,
-            make: 'Toyota', // Tier S (Reliability 10) -> 40 pts
-            price: 4000,   // < 5k (Deal 10) -> 40 pts
-            year: 2022,
-            mileage: 1000, // Very low (Mileage 10) -> 20 pts
-            created_at: new Date().toISOString() // Fresh (+20 boost)
-        };
-        const result = calculateScore(car);
-        // Base: 40 + 40 + 20 = 100. +20 boost = 120. Cap at 100.
-        expect(result.score).toBe(100);
-        expect(result.reliability).toBe(10);
-    });
-
-    it('should penalize high mileage', () => {
-        const car = {
-            ...mockListing,
-            year: 2020,
-            mileage: 200000, // Way above avg (5yr * 12k = 60k)
-        };
-        const result = calculateScore(car);
-        // Mileage score should be low (1 or 2)
-        // 20% of score is mileage.
-        // If reliability is max (10->40) and price is avg (5->20), base is 60.
-        // Mileage 1->2. Total 62.
-        expect(result.score).toBeLessThan(80);
-    });
-
-    it('should boost fresh listings', () => {
-        // Old listing
-        const oldCar = {
-            ...mockListing,
-            created_at: '2020-01-01T00:00:00Z'
-        };
-        const oldScore = calculateScore(oldCar).score;
-
-        // Fresh listing (same stats)
-        const freshCar = {
-            ...mockListing,
+            make: 'Toyota',
+            title: 'Vendo Toyota Corolla 2018 Excelentes Condiciones',
+            price: 14000,
+            year: 2018,
+            mileage: 40000,
             created_at: new Date().toISOString()
         };
-        const freshScore = calculateScore(freshCar).score;
+        const result = calculateScore(car);
 
-        expect(freshScore).toBeGreaterThan(oldScore);
-        // Should be exactly 20 points higher (unless capped)
-        if (oldScore <= 80) {
-            expect(freshScore).toBe(oldScore + 20);
-        }
+        expect(result.modelDetected).toBe('Corolla');
+        expect(result.reliability).toBe(10); // Corolla is 10
+        expect(result.score).toBeGreaterThan(80);
+        expect(result.warning).toBeUndefined();
     });
 
-    it('should handle unknown makes gracefully', () => {
-        const car = { ...mockListing, make: 'UnknownBrand' };
+    test('Should penalize "Bad Years" (Nissan Altima CVT)', () => {
+        const car = {
+            make: 'Nissan',
+            title: 'Nissan Altima 2.5 S 2013',
+            price: 6000, // Cheap, but...
+            year: 2013, // BAD YEAR
+            mileage: 90000,
+            created_at: new Date().toISOString()
+        };
         const result = calculateScore(car);
-        expect(result.reliability).toBe(5); // Default
+
+        expect(result.modelDetected).toBe('Altima');
+        expect(result.reliability).toBe(1); // Penalty!
+        expect(result.score).toBeLessThan(50); // Capped
+        expect(result.warning).toContain('Avoid');
+    });
+
+    test('Should identify Ford Focus transmission risk', () => {
+        const car = {
+            make: 'Ford',
+            title: 'Ford Focus SE 2014 Hatchback',
+            price: 5000,
+            year: 2014, // BAD YEAR
+            mileage: 80000
+        };
+        const result = calculateScore(car);
+
+        expect(result.modelDetected).toBe('Focus');
+        expect(result.reliability).toBe(1);
+        expect(result.warning).toContain('PowerShift');
+    });
+
+    test('Should detect models with fuzzy matching', () => {
+        expect(calculateScore({ ...baseCar, make: 'Hyundai', title: 'Hyundai Elantra GT' }).modelDetected).toBe('Elantra');
+        expect(calculateScore({ ...baseCar, make: 'Kia', title: 'Kia Soul !' }).modelDetected).toBe('Soul');
+        expect(calculateScore({ ...baseCar, make: 'Mazda', title: 'Mazda CX-5 Touring' }).modelDetected).toBe('CX-5');
+    });
+
+    test('Should give freshness bonus', () => {
+        const oldCar = calculateScore({
+            ...baseCar,
+            make: 'Toyota',
+            title: 'Toyota Camry 2010',
+            price: 8000,
+            year: 2010,
+            mileage: 100000,
+            created_at: new Date(Date.now() - 86400000 * 10).toISOString() // 10 days ago
+        });
+
+        const freshCar = calculateScore({
+            ...baseCar,
+            make: 'Toyota',
+            title: 'Toyota Camry 2010',
+            price: 8000,
+            year: 2010,
+            mileage: 100000,
+            created_at: new Date().toISOString() // Now
+        });
+
+        expect(freshCar.score).toBeGreaterThan(oldCar.score);
     });
 });
+
+const baseCar = {
+    make: 'Toyota',
+    title: 'Toyota Model',
+    price: 10000,
+    year: 2015,
+    mileage: 50000,
+    created_at: new Date().toISOString()
+};

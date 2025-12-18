@@ -3,14 +3,7 @@
 import { scrapeListings } from "../lib/scraper";
 import { calculateScore } from "../lib/scoring";
 import { upsertListing, getListingsByMakes, DBListing } from "../lib/db";
-
-export type ScoredListing = {
-    listing: DBListing;
-    score: number;
-    reliability: number;
-    dealScore: number;
-    isFresh: boolean;
-};
+import { ScoredListing } from "../lib/types";
 
 // Helper to scrape a single make
 async function updateMarketData(makeId: string, makeName: string) {
@@ -50,7 +43,7 @@ export async function searchDeals(makes: { id: string, name: string }[]): Promis
 
     // 3. Score Listings
     const scoredListings = dbListings.map(listing => {
-        const { score, reliability, dealScore } = calculateScore(listing);
+        const { score, reliability, dealScore, warning, modelDetected } = calculateScore(listing);
 
         const isFresh = listing.created_at
             ? (Date.now() - new Date(listing.created_at).getTime()) < (24 * 60 * 60 * 1000)
@@ -61,7 +54,9 @@ export async function searchDeals(makes: { id: string, name: string }[]): Promis
             score,
             reliability,
             dealScore,
-            isFresh
+            isFresh,
+            warning,
+            modelDetected
         };
     });
 

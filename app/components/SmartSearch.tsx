@@ -4,7 +4,8 @@ import { useState, useMemo, useEffect } from 'react';
 import Fuse from 'fuse.js';
 import makesData from '../../data/makes.json';
 import modelsData from '../../data/models.json';
-import { searchDeals, ScoredListing } from '../actions/search';
+import { searchDeals } from '../actions/search';
+import { ScoredListing } from '../lib/types';
 
 // Type definitions
 type Make = {
@@ -218,10 +219,20 @@ export default function SmartSearch() {
                                                 {item.listing.mileage > 0 ? `${(item.listing.mileage / 1000).toFixed(0)}k mi` : 'N/A'}
                                             </span>
                                         </div>
-                                        <div className="flex justify-between text-xs text-zinc-400">
-                                            <span>{item.listing.location}</span>
-                                            <span>Rel: {item.reliability}/10</span>
-                                        </div>
+
+                                        {/* Warnings */}
+                                        {item.warning ? (
+                                            <div className="bg-red-50 text-red-600 text-xs px-2 py-1 rounded border border-red-100 mb-2 font-medium">
+                                                ⚠️ {item.warning}
+                                            </div>
+                                        ) : (
+                                            <div className="flex justify-between text-xs text-zinc-400">
+                                                <span>{item.listing.location}</span>
+                                                <span title={item.modelDetected ? `Detected: ${item.modelDetected}` : 'Generic Score'}>
+                                                    Rel: {item.reliability}/10
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                             </a>
