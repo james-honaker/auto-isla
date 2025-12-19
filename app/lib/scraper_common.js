@@ -52,16 +52,19 @@ function scrapeListPage(makeId, offset = 0, extraParams = '') {
 
                 const listings = [];
                 for (const rowHtml of rows) {
-                    if (rowHtml.includes('bgcolor="#F7FAFD"') ||
-                        rowHtml.includes('bgcolor="#FFFFCC"') ||
-                        rowHtml.includes('bgcolor="#ffffcc"') ||
-                        rowHtml.includes('bgcolor="#FFFF99"') ||
-                        rowHtml.includes('bgcolor="#ffff99"')) {
-                        continue;
-                    }
-
+                    // Extract Title First to check for whitelist keywords
                     const titleMatch = rowHtml.match(/class="Tahoma17Blacknounder"[^>]*>([\s\S]*?)<\/a>/);
                     const titleRaw = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : '';
+
+                    // Ad Filtering Logic:
+                    // Only filter out "Ad" background colors if the title DOES NOT contain 'ioniq'
+                    // This ensures we capture highlighted/promoted Ioniq listings (e.g. #FFFFCC)
+                    // Use Regex for case-insensitive hex code matching (e.g. #fffFCC)
+                    const isAdColor = /bgcolor="?(#F7FAFD|#FFFFCC|#FFFF99)"?/i.test(rowHtml);
+
+                    if (isAdColor && !titleRaw.toLowerCase().includes('ioniq')) {
+                        continue;
+                    }
                     const linkMatch = rowHtml.match(/href="(\/UDTransDetail\.asp\?AutoNumAnuncio=[^"]+)"/);
                     const linkUrl = linkMatch ? `https://www.clasificadosonline.com${linkMatch[1]}` : '';
                     const priceMatch = rowHtml.match(/class="Tahoma14BrownNound"[^>]*>([\s\S]*?)<\/span>/);
@@ -86,6 +89,7 @@ function scrapeListPage(makeId, offset = 0, extraParams = '') {
                     }
 
                     let price = parsePrice(priceRaw);
+                    // Retain 0 price (Call for Price) - DO NOT FILTER OUT
                     if (price === 0) {
                         const titlePrice = titleRaw.match(/\$?\s?(\d{1,3}(,\d{3})+|\d{4,})/);
                         if (titlePrice) {
@@ -93,12 +97,20 @@ function scrapeListPage(makeId, offset = 0, extraParams = '') {
                         }
                     }
 
+                    // Clean Title (Remove NEW badge text if present in title, though usually it's an image)
+                    // The browser check showed <img ... title="Brand new...">
+                    // We need to ensure we don't accidentally parse the image tag as part of the title if regex failed to strip it.
+                    // The current regex `match(/class="Tahoma17Blacknounder"[^>]*>([\s\S]*?)<\/a>/)` grabs everything inside the A tag.
+                    // `replace(/<[^>]+>/g, '')` strips the IMG tag, leaving the alt/title text? No, replace removes the tag entirely.
+                    // So "Hyundai Ioniq 5" <img...> -> "Hyundai Ioniq 5"
+
                     const year = parseYear(titleRaw);
                     const mileage = parseMileage(mileageRaw);
 
                     let detectedModel = 'Unknown';
                     const t = titleRaw.toLowerCase();
-                    if (t.includes('ioniq 5') || t.includes('ionic 5') || t.includes('ionic 5')) detectedModel = 'Ioniq 5';
+                    // Improved matching for Ioniq 5 vs 6 vs Hybrid
+                    if (t.includes('ioniq 5') || t.includes('ionic 5')) detectedModel = 'Ioniq 5';
                     else if (t.includes('ioniq 6') || t.includes('ionic 6')) detectedModel = 'Ioniq 6';
                     else if (t.includes('hybrid') || t.includes('hibrido')) detectedModel = 'Ioniq Hybrid';
                     else if (t.includes('ioniq') || t.includes('ionic')) detectedModel = 'Ioniq';

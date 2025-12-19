@@ -64,19 +64,23 @@ export async function scrapeListPage(makeId: string, offset = 0, extraParams?: s
         const listings: CarListing[] = [];
 
         for (const rowHtml of rows) {
+            // Extract Title First to check for whitelist keywords
+            const titleMatch = rowHtml.match(/class="Tahoma17Blacknounder"[^>]*>([\s\S]*?)<\/a>/);
+            const titleRaw = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : '';
+
             // Filter out Ads/Featured listings based on background color or keywords
             // Common Ad colors: #F7FAFD (Featured top), #FFFFCC (Highlighted/Yellow)
-            if (rowHtml.includes('bgcolor="#F7FAFD"') ||
-                rowHtml.includes('bgcolor="#FFFFCC"') ||
-                rowHtml.includes('bgcolor="#ffffcc"') ||
-                rowHtml.includes('bgcolor="#FFFF99"') ||
-                rowHtml.includes('bgcolor="#ffff99"')) {
+            // Use Regex for case-insensitive hex code matching (e.g. #fffFCC)
+            // But ALLOW if title contains 'ioniq' (Highlighted real listings)
+            const isAdColor = /bgcolor="?(#F7FAFD|#FFFFCC|#FFFF99)"?/i.test(rowHtml);
+
+            if (isAdColor && !titleRaw.toLowerCase().includes('ioniq')) {
                 continue;
             }
 
-            // Title
-            const titleMatch = rowHtml.match(/class="Tahoma17Blacknounder"[^>]*>([\s\S]*?)<\/a>/);
-            const titleRaw = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : '';
+            // Title (already extracted)
+
+            // Link
 
             // Link
             const linkMatch = rowHtml.match(/href="(\/UDTransDetail\.asp\?AutoNumAnuncio=[^"]+)"/);

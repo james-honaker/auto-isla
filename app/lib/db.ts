@@ -28,6 +28,7 @@ export function getDB() {
             location TEXT,
             img_url TEXT,
             link_url TEXT,
+            is_active INTEGER DEFAULT 1,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
@@ -47,6 +48,7 @@ export interface DBListing {
     location: string;
     img_url: string;
     link_url: string;
+    is_active?: number;
     created_at?: string;
     updated_at?: string;
 }
@@ -54,11 +56,12 @@ export interface DBListing {
 export function upsertListing(listing: DBListing) {
     const db = getDB();
     const stmt = db.prepare(`
-        INSERT INTO listings (id, make, model, title, price, year, mileage, location, img_url, link_url, updated_at)
-        VALUES (@id, @make, @model, @title, @price, @year, @mileage, @location, @img_url, @link_url, CURRENT_TIMESTAMP)
+        INSERT INTO listings (id, make, model, title, price, year, mileage, location, img_url, link_url, is_active, updated_at)
+        VALUES (@id, @make, @model, @title, @price, @year, @mileage, @location, @img_url, @link_url, 1, CURRENT_TIMESTAMP)
         ON CONFLICT(id) DO UPDATE SET
             price = excluded.price,
             mileage = excluded.mileage,
+            is_active = 1,
             updated_at = CURRENT_TIMESTAMP
     `);
 
@@ -70,7 +73,7 @@ export function getListingsByMake(makeName: string, limit = 50): DBListing[] {
     const db = getDB();
     const stmt = db.prepare(`
         SELECT * FROM listings 
-        WHERE make = ? 
+        WHERE make = ? AND is_active = 1
         ORDER BY created_at DESC 
         LIMIT ?
     `);
@@ -84,7 +87,7 @@ export function getListingsByMakes(makeNames: string[], limitPerMake = 50, model
 
     let query = `
         SELECT * FROM listings 
-        WHERE make IN (${makePlaceholders})
+        WHERE make IN (${makePlaceholders}) AND is_active = 1
     `;
 
     const args: any[] = [...makeNames];
