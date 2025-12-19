@@ -96,8 +96,17 @@ export async function scrapeListPage(makeId: string, offset = 0, extraParams?: s
             const locationRaw = locationMatch ? locationMatch[1].replace(/<[^>]+>/g, '').trim() : '';
 
             // Image
-            const imgMatch = rowHtml.match(/<img[^>]+src="([^">]+)"/);
-            const imgUrl = imgMatch ? imgMatch[1] : '';
+            let imgUrl = '';
+            const imgMatch = rowHtml.match(/<img[^>]+src=["'](https?:\/\/[^"']+)["']/i);
+            if (imgMatch) {
+                imgUrl = imgMatch[1];
+            } else {
+                // 2. Fallback: Try relative path in meta itemprop="image" content
+                const metaMatch = rowHtml.match(/<meta[^>]+itemprop=["']image["'][^>]+content=["'](\/[^"']+)["']/i);
+                if (metaMatch) {
+                    imgUrl = `https://imgcache.clasificadosonline.com${metaMatch[1]}`;
+                }
+            }
 
             let price = parsePrice(priceRaw);
 

@@ -66,8 +66,20 @@ function scrapeListPage(makeId, offset = 0, extraParams = '') {
                     const mileageRaw = mileageMatch ? mileageMatch[1].replace(/<[^>]+>/g, '').trim() : '';
                     const locationMatch = rowHtml.match(/class="tahoma14hbluenoUnder"[^>]*>([\s\S]*?)<\/span>/);
                     const locationRaw = locationMatch ? locationMatch[1].replace(/<[^>]+>/g, '').trim() : '';
-                    const imgMatch = rowHtml.match(/<img[^>]+src="([^">]+)"/);
-                    const imgUrl = imgMatch ? imgMatch[1] : '';
+                    // Image Extraction Logic
+                    // 1. Try absolute http(s) src in img tag
+                    let imgUrl = '';
+                    const imgMatch = rowHtml.match(/<img[^>]+src=["'](https?:\/\/[^"']+)["']/i);
+                    if (imgMatch) {
+                        imgUrl = imgMatch[1];
+                    } else {
+                        // 2. Fallback: Try relative path in meta itemprop="image" content
+                        // Example: <meta itemprop="image" content="/PP/T/..." />
+                        const metaMatch = rowHtml.match(/<meta[^>]+itemprop=["']image["'][^>]+content=["'](\/[^"']+)["']/i);
+                        if (metaMatch) {
+                            imgUrl = `https://imgcache.clasificadosonline.com${metaMatch[1]}`;
+                        }
+                    }
 
                     let price = parsePrice(priceRaw);
                     if (price === 0) {
