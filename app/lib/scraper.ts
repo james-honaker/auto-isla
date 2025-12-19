@@ -52,7 +52,9 @@ export async function scrapeListPage(makeId: string, offset = 0, extraParams?: s
             return { listings: [], nextOffset: null };
         }
 
-        const html = await response.text();
+        const arrayBuffer = await response.arrayBuffer();
+        const decoder = new TextDecoder('windows-1252');
+        const html = decoder.decode(arrayBuffer);
 
         // Strategy: Split by the specific row tag
         const rowDelimiter = '<tr align="center" valign="middle">';

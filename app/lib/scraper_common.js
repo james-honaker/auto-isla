@@ -1,4 +1,5 @@
 const https = require('https');
+const iconv = require('iconv-lite');
 
 // Helper to clean price string (e.g., "$19,000" -> 19000)
 function parsePrice(priceStr) {
@@ -39,9 +40,12 @@ function scrapeListPage(makeId, offset = 0, extraParams = '') {
                 return;
             }
 
-            let data = '';
-            res.on('data', chunk => data += chunk);
+            const chunks = [];
+            res.on('data', chunk => chunks.push(chunk));
             res.on('end', () => {
+                const buffer = Buffer.concat(chunks);
+                const data = iconv.decode(buffer, 'win1252'); // Decode properly
+
                 const rowDelimiter = '<tr align="center" valign="middle">';
                 const rows = data.split(rowDelimiter);
                 rows.shift();
