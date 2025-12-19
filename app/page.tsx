@@ -1,6 +1,9 @@
 import SmartSearch from './components/SmartSearch';
+import { getLastUpdated } from './lib/db';
 
 export default function Home() {
+  const lastUpdated = getLastUpdated();
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-50 dark:bg-zinc-900 p-4">
       <main className="w-full max-w-4xl flex flex-col items-center gap-12 text-center">
@@ -18,7 +21,7 @@ export default function Home() {
         </div>
 
         {/* Search Widget */}
-        <SmartSearch />
+        <SmartSearch lastUpdated={lastUpdated} />
 
         {/* Footer */}
         <div className="text-sm text-zinc-400 mt-8">

@@ -5,16 +5,20 @@ import { calculateScore } from "../lib/scoring";
 import { upsertListing, getListingsByMakes, DBListing } from "../lib/db";
 import { ScoredListing } from "../lib/types";
 
+import { detectModel } from "../lib/scoring";
+
 // Helper to scrape a single make
 async function updateMarketData(makeId: string, makeName: string) {
     try {
-        const rawListings = await scrapeListings(makeId, 20); // Scrape top 20 fresh ones
+        const rawListings = await scrapeListings(makeId, 50); // Scrape top 50 fresh ones
 
         for (const listing of rawListings) {
+            const detectedModel = detectModel(makeName, listing.title) || '';
+
             upsertListing({
                 id: listing.linkUrl,
                 make: makeName,
-                model: '',
+                model: detectedModel,
                 title: listing.title,
                 price: listing.price,
                 year: listing.year,
@@ -29,7 +33,7 @@ async function updateMarketData(makeId: string, makeName: string) {
     }
 }
 
-export async function searchDeals(makes: { id: string, name: string }[]): Promise<ScoredListing[]> {
+export async function searchDeals(makes: { id: string, name: string }[], models?: string[]): Promise<ScoredListing[]> {
     console.log(`Searching best deals for ${makes.map(m => m.name).join(', ')}...`);
 
     // 1. Scrape Listings (Parallel)
@@ -39,7 +43,8 @@ export async function searchDeals(makes: { id: string, name: string }[]): Promis
 
     // 2. Fetch from DB (Historic + New)
     const makeNames = makes.map(m => m.name);
-    const dbListings = getListingsByMakes(makeNames, 20); // Get recent 20 from each (approx)
+    // Pass model filter to DB
+    const dbListings = getListingsByMakes(makeNames, 20, models); // Get recent 20 from each (approx)
 
     // 3. Score Listings
     const scoredListings = dbListings.map(listing => {

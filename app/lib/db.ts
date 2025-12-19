@@ -4,7 +4,7 @@ import fs from 'fs';
 
 let dbInstance: Database.Database | null = null;
 
-function getDB() {
+export function getDB() {
     if (dbInstance) return dbInstance;
 
     const dataDir = path.join(process.cwd(), 'data');
@@ -77,32 +77,34 @@ export function getListingsByMake(makeName: string, limit = 50): DBListing[] {
     return stmt.all(makeName, limit) as DBListing[];
 }
 
-export function getListingsByMakes(makeNames: string[], limitPerMake = 50): DBListing[] {
+export function getListingsByMakes(makeNames: string[], limitPerMake = 50, models?: string[]): DBListing[] {
     const db = getDB();
     // Dynamically build placeholders for IN clause
-    const placeholders = makeNames.map(() => '?').join(',');
-    const stmt = db.prepare(`
+    const makePlaceholders = makeNames.map(() => '?').join(',');
+
+    let query = `
         SELECT * FROM listings 
-        WHERE make IN (${placeholders})
-        ORDER BY created_at DESC 
-        LIMIT ?
-    `);
+        WHERE make IN (${makePlaceholders})
+    `;
 
-    // We strictly haven't stored 'score' in DB yet, it's calculated on fly. 
-    // So for now, just order by created_at.
-    // Wait, if we want "Best Options" we need to score them *after* fetching or store score.
-    // The current architecture calculates score in search.ts.
-    // So just fetching by recent is fine, sorting happens in search.ts.
+    const args: any[] = [...makeNames];
 
-    const query = `
-        SELECT * FROM listings 
-        WHERE make IN(${placeholders})
-        ORDER BY created_at DESC
-    LIMIT ?
-        `;
+    // Add Model Filtering
+    if (models && models.length > 0) {
+        const modelPlaceholders = models.map(() => '?').join(',');
+        query += ` AND model IN (${modelPlaceholders})`;
+        args.push(...models);
+    }
 
-    // A global limit might hide good results from one brand if another dominates.
-    // But for a combined view, a global limit (e.g. 100) is reasonable.
-    const runStmt = db.prepare(query);
-    return runStmt.all(...makeNames, limitPerMake * makeNames.length) as DBListing[];
+    query += ` ORDER BY created_at DESC LIMIT ?`;
+    args.push(limitPerMake * makeNames.length);
+
+    const stmt = db.prepare(query);
+    return stmt.all(...args) as DBListing[];
+}
+
+export function getLastUpdated(): string | null {
+    const db = getDB();
+    const row = db.prepare('SELECT MAX(updated_at) as last_updated FROM listings').get() as { last_updated: string };
+    return row?.last_updated || null;
 }

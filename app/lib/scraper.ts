@@ -31,11 +31,12 @@ function parseMileage(text: string) {
     return match ? parseInt(match[0], 10) : 0;
 }
 
-export async function scrapeListings(makeId: string, quantity = 10): Promise<CarListing[]> {
-    console.log(`[Server] Scraping Make ID: ${makeId}...`);
+// Scrape a specific page of listings for a given Make
+export async function scrapeListPage(makeId: string, offset = 0, extraParams?: string): Promise<{ listings: CarListing[], nextOffset: number | null }> {
+    console.log(`[Server] Scraping Make ID: ${makeId} (Offset: ${offset}, Extra: ${extraParams || ''})...`);
 
-    // Construct URL for specific Make, Type=Autos
-    const url = `https://www.clasificadosonline.com/UDTransListingADV.asp?Marca=${makeId}&TipoC=1&Submit2=Buscar+-+Go`;
+    // Construct URL for specific Make, Type=Autos, with Offset
+    const url = `https://www.clasificadosonline.com/UDTransListingADV.asp?Marca=${makeId}&TipoC=1&Submit2=Buscar+-+Go&offset=${offset}${extraParams || ''}`;
 
     try {
         const response = await fetch(url, {
@@ -43,12 +44,12 @@ export async function scrapeListings(makeId: string, quantity = 10): Promise<Car
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
             },
-            next: { revalidate: 0 } // Don't cache for now
+            // next: { revalidate: 0 } // Don't cache for now - Removed for TS-Node compatibility
         });
 
         if (!response.ok) {
             console.error(`Scrape failed: ${response.status}`);
-            return [];
+            return { listings: [], nextOffset: null };
         }
 
         const html = await response.text();
@@ -61,6 +62,16 @@ export async function scrapeListings(makeId: string, quantity = 10): Promise<Car
         const listings: CarListing[] = [];
 
         for (const rowHtml of rows) {
+            // Filter out Ads/Featured listings based on background color or keywords
+            // Common Ad colors: #F7FAFD (Featured top), #FFFFCC (Highlighted/Yellow)
+            if (rowHtml.includes('bgcolor="#F7FAFD"') ||
+                rowHtml.includes('bgcolor="#FFFFCC"') ||
+                rowHtml.includes('bgcolor="#ffffcc"') ||
+                rowHtml.includes('bgcolor="#FFFF99"') ||
+                rowHtml.includes('bgcolor="#ffff99"')) {
+                continue;
+            }
+
             // Title
             const titleMatch = rowHtml.match(/class="Tahoma17Blacknounder"[^>]*>([\s\S]*?)<\/a>/);
             const titleRaw = titleMatch ? titleMatch[1].replace(/<[^>]+>/g, '').trim() : '';
@@ -88,9 +99,28 @@ export async function scrapeListings(makeId: string, quantity = 10): Promise<Car
             const imgMatch = rowHtml.match(/<img[^>]+src="([^">]+)"/);
             const imgUrl = imgMatch ? imgMatch[1] : '';
 
-            const price = parsePrice(priceRaw);
+            let price = parsePrice(priceRaw);
+
+            // Fallback: Parse price from title if 0 or missing
+            if (price === 0) {
+                const titlePrice = titleRaw.match(/\$?\s?(\d{1,3}(,\d{3})+|\d{4,})/);
+                if (titlePrice) {
+                    price = parseInt(titlePrice[1].replace(/,/g, ''), 10);
+                }
+            }
+
             const year = parseYear(titleRaw);
             const mileage = parseMileage(mileageRaw);
+
+            // Detect correct model from title (Advanced Classification)
+            let detectedModel = 'Unknown';
+            const t = titleRaw.toLowerCase();
+
+            // Hyundai Ioniq Specific Logic
+            if (t.includes('ioniq 5') || t.includes('ionic 5') || t.includes('ionic 5')) detectedModel = 'Ioniq 5';
+            else if (t.includes('ioniq 6') || t.includes('ionic 6')) detectedModel = 'Ioniq 6';
+            else if (t.includes('hybrid') || t.includes('hibrido')) detectedModel = 'Ioniq Hybrid';
+            else if (t.includes('ioniq') || t.includes('ionic')) detectedModel = 'Ioniq'; // Generic fallback
 
             if (linkUrl && titleRaw) {
                 listings.push({
@@ -100,17 +130,76 @@ export async function scrapeListings(makeId: string, quantity = 10): Promise<Car
                     mileage,
                     location: locationRaw,
                     imgUrl,
-                    linkUrl
+                    linkUrl,
+                    // @ts-ignore - appending dynamic property for sync script usage
+                    modelDetected: detectedModel
                 });
             }
-
-            if (listings.length >= quantity) break;
         }
 
-        return listings;
+        // Find "Proximos" (Next) link using robust reverse-lookup
+        // Structure: <a href="...">...<img ... alt="Proximos">...</a>
+        // We find the image first, then look backwards for the opening <a> tag.
+        const imgRegex = /<img[^>]+alt="Proximos"/i;
+        const imgMatch = html.match(imgRegex);
+        let nextOffset: number | null = null;
+
+        if (imgMatch && imgMatch.index !== undefined) {
+            const imgIndex = imgMatch.index;
+            const searchWindow = html.substring(Math.max(0, imgIndex - 1000), imgIndex);
+            const lastAnchorIndex = searchWindow.lastIndexOf("<a ");
+
+            if (lastAnchorIndex !== -1) {
+                const anchorTag = searchWindow.substring(lastAnchorIndex);
+                const hrefMatch = anchorTag.match(/href="([^"]+)"/i);
+                if (hrefMatch) {
+                    const relativeUrl = hrefMatch[1];
+                    const match = relativeUrl.match(/offset=(\d+)/i);
+                    if (match) {
+                        nextOffset = parseInt(match[1], 10);
+                    }
+                }
+            }
+        }
+
+        return { listings, nextOffset };
 
     } catch (error) {
         console.error('Error scraping listings:', error);
-        return [];
+        return { listings: [], nextOffset: null };
     }
+}
+
+// Scrape ALL pages until empty
+export async function scrapeAllListings(makeId: string, extraParams?: string): Promise<CarListing[]> {
+    let allListings: CarListing[] = [];
+    let currentOffset: number | null = 0;
+
+    // Safety limit
+    let pagesScraped = 0;
+    const MAX_PAGES = 500; // ~15,000 listings, plenty for any brand
+
+    while (currentOffset !== null && pagesScraped < MAX_PAGES) {
+        const { listings, nextOffset } = await scrapeListPage(makeId, currentOffset, extraParams);
+
+        if (listings.length === 0) {
+            break;
+        }
+
+        allListings = [...allListings, ...listings];
+        currentOffset = nextOffset;
+        pagesScraped++;
+
+        // Polite delay
+        await new Promise(r => setTimeout(r, 200));
+    }
+
+    return allListings;
+}
+
+// For backward compatibility (shallow scrape)
+export async function scrapeListings(makeId: string, quantity = 50): Promise<CarListing[]> {
+    // Just fetch page 0
+    const { listings } = await scrapeListPage(makeId, 0);
+    return listings;
 }

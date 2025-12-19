@@ -38,14 +38,10 @@ const BUYERS_LIST = [
     "32", // Mazda
 ];
 
-export default function SmartSearch() {
+export default function SmartSearch({ lastUpdated }: { lastUpdated?: string | null }) {
     // Multi-select state
     const [selectedMakes, setSelectedMakes] = useState<string[]>([]);
-
-    // NOTE: Model selection with multi-make is complex. 
-    // For now, we disable model filtering when multiple makes are selected, 
-    // or arguably we could just hide it until a single make is focused.
-    // Let's hide it for simplicity in "Compare Mode".
+    const [selectedModels, setSelectedModels] = useState<string[]>([]);
 
     // Results State
     const [results, setResults] = useState<ScoredListing[]>([]);
@@ -54,22 +50,51 @@ export default function SmartSearch() {
     // Cast imported JSON to typed data
     const makes = makesData as Make[];
 
+    // Import reliability Map for model lists (using import is cleaner but we can also cast)
+    const reliabilityDB = require('../../data/reliability.json');
+
+    // Available Models based on Selection
+    const availableModels = useMemo(() => {
+        if (selectedMakes.length === 0) return [];
+
+        let models: string[] = [];
+        selectedMakes.forEach(makeId => {
+            const makeName = makes.find(m => m.id === makeId)?.name;
+            if (makeName && reliabilityDB[makeName]) {
+                const makeModels = Object.keys(reliabilityDB[makeName].models || {});
+                models = [...models, ...makeModels];
+            }
+        });
+
+        return Array.from(new Set(models)).sort();
+    }, [selectedMakes, makes]);
+
     // Filter makes to just the buyer's list
     const filteredMakes = useMemo(() => {
         return makes.filter(make => BUYERS_LIST.includes(make.id))
             .sort((a, b) => BUYERS_LIST.indexOf(a.id) - BUYERS_LIST.indexOf(b.id));
     }, [makes]);
 
-    // Handle Toggle
+    // Handle Toggle Make
     const toggleMake = (makeId: string) => {
         setSelectedMakes(prev => {
-            if (prev.includes(makeId)) {
-                // Remove
-                return prev.filter(id => id !== makeId);
-            } else {
-                // Add
-                return [...prev, makeId];
-            }
+            const newSelection = prev.includes(makeId)
+                ? prev.filter(id => id !== makeId)
+                : [...prev, makeId];
+
+            // When brands change, existing model selections might be invalid.
+            // But let's keep them if they sort of make sense, or just clear them.
+            // Clearing is safer UX.
+            setSelectedModels([]);
+            return newSelection;
+        });
+    };
+
+    // Handle Toggle Model
+    const toggleModel = (model: string) => {
+        setSelectedModels(prev => {
+            if (prev.includes(model)) return prev.filter(m => m !== model);
+            return [...prev, model];
         });
     };
 
@@ -90,7 +115,7 @@ export default function SmartSearch() {
                     return { id, name: m?.name || '' };
                 });
 
-                const deals = await searchDeals(targetMakes);
+                const deals = await searchDeals(targetMakes, selectedModels);
                 setResults(deals);
             } catch (e) {
                 console.error("Search failed", e);
@@ -102,7 +127,7 @@ export default function SmartSearch() {
         // Debounce slightly to allow rapid toggling without firing 100 reqs
         const timer = setTimeout(fetchDeals, 800);
         return () => clearTimeout(timer);
-    }, [selectedMakes, makes]);
+    }, [selectedMakes, selectedModels, makes]);
 
 
     return (
@@ -118,6 +143,11 @@ export default function SmartSearch() {
                     <span className="text-xs text-sky-600 font-medium">
                         {selectedMakes.length === 0 ? "Showing Top Picks from All Brands" : `Comparing ${selectedMakes.length} Brand(s)`}
                     </span>
+                    {lastUpdated && (
+                        <span className="block text-[10px] text-zinc-400 mt-2 font-mono">
+                            Data as of: {new Date(lastUpdated).toLocaleString()}
+                        </span>
+                    )}
                 </p>
             </div>
 
@@ -145,6 +175,35 @@ export default function SmartSearch() {
                     );
                 })}
             </div>
+
+            {/* Model Selection (Dynamic) */}
+            {availableModels.length > 0 && (
+                <div className="w-full space-y-3 animate-in fade-in slide-in-from-top-2">
+                    <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-wider text-center">
+                        Filter by Model
+                    </h3>
+                    <div className="flex flex-wrap justify-center gap-2">
+                        {availableModels.map((model) => {
+                            const isSelected = selectedModels.includes(model);
+                            return (
+                                <button
+                                    key={model}
+                                    onClick={() => toggleModel(model)}
+                                    className={`
+                                        px-3 py-1.5 rounded-full text-sm font-medium border transition-colors
+                                        ${isSelected
+                                            ? 'bg-sky-100 text-sky-700 border-sky-300 dark:bg-sky-900/30 dark:text-sky-300 dark:border-sky-700'
+                                            : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-300 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700'
+                                        }
+                                    `}
+                                >
+                                    {model}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+            )}
 
             {/* Loading Indicator */}
             {isLoading && (

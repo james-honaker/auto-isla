@@ -29,7 +29,10 @@ export type ScoredResult = {
 // Helper: Extract Model from Title
 // e.g. "Toyota Corolla 2020" -> "Corolla"
 // We use the keys in our reliability DB as the "known models" list for that make.
-function detectModel(make: string, title: string): string | null {
+// Helper: Extract Model from Title
+// e.g. "Toyota Corolla 2020" -> "Corolla"
+// We use the keys in our reliability DB as the "known models" list for that make.
+export function detectModel(make: string, title: string): string | null {
     if (!make || !title) return null;
 
     const makeInfo = RELIABILITY_DB[make];

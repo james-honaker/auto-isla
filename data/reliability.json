@@ -267,6 +267,19 @@
             },
             "Veloster": {
                 "score": 7
+            },
+            "Ioniq": {
+                "score": 9
+            },
+            "Ioniq 5": {
+                "score": 9
+            },
+            "Ioniq 6": {
+                "score": 9
+            },
+            "Ionic": {
+                "score": 9,
+                "warning": "Did you mean Ioniq?"
             }
         }
     },
