@@ -44,7 +44,7 @@ export async function searchDeals(makes: { id: string, name: string }[], models?
     // 2. Fetch from DB (Historic + New)
     const makeNames = makes.map(m => m.name);
     // Pass model filter to DB
-    const dbListings = getListingsByMakes(makeNames, 20, models); // Get recent 20 from each (approx)
+    const dbListings = getListingsByMakes(makeNames, 1000, models); // Get recent 1000 from each (Showing ample results)
 
     // 3. Score Listings
     const scoredListings = dbListings.map(listing => {

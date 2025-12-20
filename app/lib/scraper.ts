@@ -12,6 +12,8 @@ export type CarListing = {
 // Helper to clean price string (e.g., "$19,000" -> 19000)
 function parsePrice(priceStr: string) {
     if (!priceStr) return 0;
+    // Fix: Require '$' symbol to avoid parsing years (e.g. "2024") as prices
+    if (!priceStr.includes('$')) return 0;
     const val = parseInt(priceStr.replace(/[^0-9]/g, ''), 10);
     return isNaN(val) ? 0 : val;
 }
@@ -117,8 +119,9 @@ export async function scrapeListPage(makeId: string, offset = 0, extraParams?: s
             let price = parsePrice(priceRaw);
 
             // Fallback: Parse price from title if 0 or missing
+            // FIX: Require '$' sign to avoid matching years (e.g. 2024)
             if (price === 0) {
-                const titlePrice = titleRaw.match(/\$?\s?(\d{1,3}(,\d{3})+|\d{4,})/);
+                const titlePrice = titleRaw.match(/\$\s?(\d{1,3}(,\d{3})+|\d{4,})/);
                 if (titlePrice) {
                     price = parseInt(titlePrice[1].replace(/,/g, ''), 10);
                 }
@@ -136,6 +139,12 @@ export async function scrapeListPage(makeId: string, offset = 0, extraParams?: s
             else if (t.includes('ioniq 6') || t.includes('ionic 6')) detectedModel = 'Ioniq 6';
             else if (t.includes('hybrid') || t.includes('hibrido')) detectedModel = 'Ioniq Hybrid';
             else if (t.includes('ioniq') || t.includes('ionic')) detectedModel = 'Ioniq'; // Generic fallback
+
+            // Toyota Specific
+            else if (t.includes('prius')) detectedModel = 'Prius';
+            else if (t.includes('tacoma')) detectedModel = 'Tacoma';
+            else if (t.includes('4runner')) detectedModel = '4Runner';
+            else if (t.includes('corolla')) detectedModel = 'Corolla';
 
             if (linkUrl && titleRaw) {
                 listings.push({
